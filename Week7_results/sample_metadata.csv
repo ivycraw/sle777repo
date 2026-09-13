@@ -1,0 +1,7 @@
+"sample_id","condition","age_days","replicate"
+"SRR10551660","thin",45,3
+"SRR10551661","thin",45,2
+"SRR10551662","thin",45,1
+"SRR10551663","early",10,3
+"SRR10551664","early",10,2
+"SRR10551665","early",10,1

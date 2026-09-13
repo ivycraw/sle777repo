@@ -1,0 +1,434 @@
+# Run 27 Aug 2026 10:04am
+
+> source("~/scripts/r/Week6_gene_expression_R_basics.R")
+ chr [1:6] "SRR10551660.txt" "SRR10551661.txt" "SRR10551662.txt" ...
+'data.frame':	7132 obs. of  2 variables:
+ $ gene_id: chr  "ETS1-1" "ETS1-2" "ETS2-1" "ETS2-2" ...
+ $ count  : int  0 0 0 0 7 40 42 0 0 0 ...
+The mean and median count values tells us a lot about the distribution of read counts across genes
+This plot should make the distribution easier to interpret. Raw RNA-seq counts can span a wide range. Log transformation is useful for visualisation because it allows low-count and high-count genes to be shown more clearly on the same plot.
+This plot shows how gene expression counts are distributed in one RNA-seq sample
+Restarting R session...
+> source("~/scripts/r/Week6_gene_expression_R_basics.R", echo = TRUE)
+
+> # Week 6: Introduction to R using gene expression count data
+> # Today we will inspect one HTSeq-count file in R.
+> 
+> 
+> ########################## .... [TRUNCATED] 
+
+> count_files <- list.files(counts_dir)
+
+> count_files
+[1] "SRR10551660.txt" "SRR10551661.txt" "SRR10551662.txt" "SRR10551663.txt"
+[5] "SRR10551664.txt" "SRR10551665.txt"
+
+> # Checking type
+> str(count_files)
+ chr [1:6] "SRR10551660.txt" "SRR10551661.txt" "SRR10551662.txt" ...
+
+> class(count_files)
+[1] "character"
+
+> length(count_files)
+[1] 6
+
+> # first file vector
+> # R lists starts at 1 not zero
+> first_file_name <- count_files[1]
+
+> first_file_name
+[1] "SRR10551660.txt"
+
+> ####################################
+> # Creating a full file path
+> ####################################
+> 
+> # The object count_files contains fil .... [TRUNCATED] 
+
+> first_file_path
+[1] "/home/shared/counts/SRR10551660.txt"
+
+> ####################################
+> # Reading one gene count file
+> ####################################
+> 
+> # Read firrst count file into R
+> # .... [TRUNCATED] 
+
+> # Inspect generally
+> head(gene_counts)
+  gene_id count
+1  ETS1-1     0
+2  ETS1-2     0
+3  ETS2-1     0
+4  ETS2-2     0
+5    HRA1     7
+6    ICR1    40
+
+> # Inspect the structure
+> str(gene_counts)
+'data.frame':	7132 obs. of  2 variables:
+ $ gene_id: chr  "ETS1-1" "ETS1-2" "ETS2-1" "ETS2-2" ...
+ $ count  : int  0 0 0 0 7 40 42 0 0 0 ...
+
+> # Check dimensions
+> 
+> # ...each row represents one gene or one HTSeq-count summary category
+> # The two columns are gene ID and count.
+> dim(gene_ .... [TRUNCATED] 
+[1] 7132    2
+
+> ####################################
+> # Understanding the count table
+> ####################################
+> 
+> # Inspecting first few gene IDs a .... [TRUNCATED] 
+[1] "ETS1-1" "ETS1-2" "ETS2-1" "ETS2-2" "HRA1"   "ICR1"  
+
+> head(gene_counts$count)
+[1]  0  0  0  0  7 40
+
+> # Check class of each column
+> 
+> # The gene IDs are text values while counts are num or int
+> # Important as we can calc sums, means and medians fr .... [TRUNCATED] 
+[1] "character"
+
+> class(gene_counts$count)
+[1] "integer"
+
+> ####################################
+> # Removing HTSeq-count summary rows
+> ####################################
+> 
+> # HTSeq-count files usually c .... [TRUNCATED] 
+
+> head(summary_rows)
+[1] FALSE FALSE FALSE FALSE FALSE FALSE
+
+> tail(summary_rows)
+[1] FALSE  TRUE  TRUE  TRUE  TRUE  TRUE
+
+> # Separate gene rows from summary rows
+> gene_counts_only <- gene_counts[!summary_rows, ]
+
+> htseq_summary <- gene_counts[summary_rows, ]
+
+> # Inspect
+> head(gene_counts_only)
+  gene_id count
+1  ETS1-1     0
+2  ETS1-2     0
+3  ETS2-1     0
+4  ETS2-2     0
+5    HRA1     7
+6    ICR1    40
+
+> htseq_summary
+                    gene_id   count
+7128           __no_feature 1278454
+7129            __ambiguous   20813
+7130        __too_low_aQual       0
+7131          __not_aligned       0
+7132 __alignment_not_unique       0
+
+> ####################################
+> # Summarising the count data
+> ####################################
+> 
+> # How many genes are present?
+> nrow .... [TRUNCATED] 
+[1] 7127
+
+> # What is the total number of reads assigned to genes?
+> sum(gene_counts_only$count)
+[1] 1168450
+
+> # What is the average count per gene?
+> mean(gene_counts_only$count)
+[1] 163.947
+
+> # What is the median count per gene?
+> median(gene_counts_only$count)
+[1] 47
+
+> #What is the maximum count for any gene?
+> max(gene_counts_only$count)
+[1] 222714
+
+> # The mean and median are often quite different in RNA-seq data
+> # Many genes have low counts
+> # ...while a smaller n of genes can be very highly  .... [TRUNCATED] 
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+     0.0     15.0     47.0    163.9    101.0 222714.0 
+
+> message("The mean and median count values tells us a lot about the distribution of read counts across genes")
+The mean and median count values tells us a lot about the distribution of read counts across genes
+
+> ####################################
+> # Counting genes with zero, low and high expression
+> ####################################
+> 
+> # A gene with .... [TRUNCATED] 
+[1] 785
+
+> # Genes with at least ten reads
+> sum(gene_counts_only$count >= 10)
+[1] 5618
+
+> # At least 100 reads
+> sum(gene_counts_only$count >= 100)
+[1] 1819
+
+> # Later when we prepare data for DESeq2
+> # ...filtering low-count genes are important part of workflow
+> 
+> ####################################
+>  .... [TRUNCATED] 
+
+> head(expressed_genes)
+   gene_id  count
+6     ICR1     40
+7     IRT1     42
+12    LSR1   5073
+13    NME1    519
+14    PWR1     19
+17   Q0020 165998
+
+> nrow(expressed_genes)
+[1] 5618
+
+> # Zero reads
+> zero_count_genes <- gene_counts_only[gene_counts_only$count == 0, ]
+
+> head(zero_count_genes)
+  gene_id count
+1  ETS1-1     0
+2  ETS1-2     0
+3  ETS2-1     0
+4  ETS2-2     0
+8  ITS1-1     0
+9  ITS1-2     0
+
+> nrow(zero_count_genes)
+[1] 785
+
+> # At least 1000 reads
+> high_count_genes <- gene_counts_only[gene_counts_only$count >= 1000, ]
+
+> head(high_count_genes)
+   gene_id  count
+12    LSR1   5073
+17   Q0020 165998
+19   Q0045   4322
+29   Q0105   2204
+33   Q0130   5765
+38   Q0158 222714
+
+> nrow(high_count_genes)
+[1] 95
+
+> # Subsetting is very common in bioinformatics
+> # We subset genes by count, by gene ID, by fold change
+> # ...or by functional category
+> 
+> ####### .... [TRUNCATED] 
+
+> head(ordered_genes)
+     gene_id  count
+38     Q0158 222714
+17     Q0020 165998
+4264 YLR110C   7071
+33     Q0130   5765
+12      LSR1   5073
+3796 YKL060C   5068
+
+> # Select top ten genes
+> top10_genes <- ordered_genes[1:10, ]
+
+> top10_genes
+       gene_id  count
+38       Q0158 222714
+17       Q0020 165998
+4264   YLR110C   7071
+33       Q0130   5765
+12        LSR1   5073
+3796   YKL060C   5068
+41       Q0250   4546
+19       Q0045   4322
+70        SCR1   3790
+5095 YMR251W-A   3669
+
+> # Top 20 genes
+> top20_genes <- ordered_genes[1:20, ]
+
+> top20_genes
+       gene_id  count
+38       Q0158 222714
+17       Q0020 165998
+4264   YLR110C   7071
+33       Q0130   5765
+12        LSR1   5073
+3796   YKL060C   5068
+41       Q0250   4546
+19       Q0045   4322
+70        SCR1   3790
+5095 YMR251W-A   3669
+5575 YNR034W-A   3491
+2173   YGL008C   3445
+5352   YNL160W   3310
+3687   YJR121W   3282
+377    YBR054W   3124
+1670 YDR524C-B   3092
+1704   YEL009C   2849
+43       Q0275   2710
+2690   YGR234W   2676
+6735   YPR194C   2593
+
+> ####################################
+> # Plotting count distro using base R
+> ####################################
+> 
+> # RNA-seq counts often have  .... [TRUNCATED] 
+
+> # It is common to plot transformed counts
+> # We will use log10(count + 1)
+> # We add 1 because some genes have zero counts
+> # The logarithm of zer .... [TRUNCATED] 
+
+> # Plot transformed values
+> hist(
++   gene_counts_only$log10_count,
++   xlab = "log10(count + 1)",
++   ylab = "Number of genes",
++   main = "Distrib ..." ... [TRUNCATED] 
+
+> message("This plot should make the distribution easier to interpret. Raw RNA-seq counts can span a wide range. Log transformation is useful for visu ..." ... [TRUNCATED] 
+This plot should make the distribution easier to interpret. Raw RNA-seq counts can span a wide range. Log transformation is useful for visualisation because it allows low-count and high-count genes to be shown more clearly on the same plot.
+
+> ####################################
+> # Intro to ggplot2
+> ####################################
+> 
+> # Base R plots are useful but many researches  .... [TRUNCATED] 
+Need help getting started? Try the R Graphics Cookbook:
+https://r-graphics.org
+
+> # Basic structure is...
+> # ggplot(data, aes(x = column_name)) + geom_function()
+> 
+> # ggplot() starts the plot
+> # data is the data frame
+> # aes( .... [TRUNCATED] 
+
+> message("This plot shows how gene expression counts are distributed in one RNA-seq sample")
+This plot shows how gene expression counts are distributed in one RNA-seq sample
+
+> ####################################
+> # Plotting the most highly expressed genes
+> ####################################
+> 
+> # Plot top 20 genes
+>  .... [TRUNCATED] 
+
+> # Make a bar plot
+> ggplot(top20_genes, aes(x = reorder(gene_id, count), y = count)) +
++   geom_col() +
++   coord_flip() +
++   labs(
++     title = " ..." ... [TRUNCATED] 
+
+> # The geom_col function creates a bar plot where the height of each bar comes from the data
+> # The coord_flip function flips the axes, making gene  .... [TRUNCATED] 
+
+> # Subset the count table for this gene
+> selected_gene <- gene_counts_only[gene_counts_only$gene_id == gene_of_interest, ]
+
+> selected_gene
+     gene_id count log10_count
+1179 YDR070C    98    1.995635
+
+> # If the result is empty
+> # ...the gene ID may not be present in the file or may be spelled differently
+> 
+> # Try another gene from top 20 list
+>  .... [TRUNCATED] 
+ [1] "Q0158"     "Q0020"     "YLR110C"   "Q0130"     "LSR1"      "YKL060C"  
+ [7] "Q0250"     "Q0045"     "SCR1"      "YMR251W-A" "YNR034W-A" "YGL008C"  
+[13] "YNL160W"   "YJR121W"   "YBR054W"   "YDR524C-B" "YEL009C"   "Q0275"    
+[19] "YGR234W"   "YPR194C"  
+
+> # Select one gene from top 20 and create an object
+> # Extract this gene from gene_counts_only
+> my_gene <- top20_genes$gene_id[1]
+
+> my_gene_counts <- gene_counts_only[gene_counts_only$gene_id == my_gene, ]
+
+> my_gene_counts
+   gene_id  count log10_count
+38   Q0158 222714    5.347749
+
+> ####################################
+> # Saving outputs
+> ####################################
+> 
+> # Create dir
+> dir.create("Week6_results", showW .... [TRUNCATED] 
+
+> # Save top 20 genes
+> write.csv(
++   top20_genes,
++   file = "Week6_results/top20_genes_first_sample.csv",
++   row.names = FALSE
++ )
+
+> # Save the cleaned gene count table
+> write.csv(
++   gene_counts_only,
++   file = "Week6_results/cleaned_gene_counts_first_sample.csv",
++   row.name .... [TRUNCATED] 
+
+> # Save most recent plot
+> ggsave(
++   filename = "Week6_results/top20_gene_expression_plot.png",
++   width = 7,
++   height = 5
++ )
+
+> ####################################
+> # Week 6: Summary
+> ####################################
+> 
+> # We read a single HTSeq-count file into R
+> #  .... [TRUNCATED] 
+R version 4.6.1 (2026-06-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 22.04.5 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0 
+LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0  LAPACK version 3.10.0
+
+locale:
+ [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
+ [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+ [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
+[10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+
+time zone: Australia/Melbourne
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] ggplot2_4.0.3
+
+loaded via a namespace (and not attached):
+ [1] labeling_0.4.3     RColorBrewer_1.1-3 R6_2.6.1           tidyselect_1.2.1  
+ [5] farver_2.1.2       magrittr_2.0.5     gtable_0.3.6       glue_1.8.1        
+ [9] tibble_3.3.1       pkgconfig_2.0.3    dplyr_1.2.1        generics_0.1.4    
+[13] lifecycle_1.0.5    cli_3.6.6          S7_0.2.2           scales_1.4.0      
+[17] grid_4.6.1         vctrs_0.7.3        withr_3.0.3        compiler_4.6.1    
+[21] rstudioapi_0.19.0  tools_4.6.1        pillar_1.11.1      rlang_1.3.0   

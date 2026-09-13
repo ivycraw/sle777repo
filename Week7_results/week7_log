@@ -1,0 +1,584 @@
+> source("~/scripts/r/Week7_count_matrix.R", echo = TRUE)
+
+> ####################################
+> # Week 7
+> ####################################
+> 
+> # Week 7: Building the count matrix
+> # Combine six HTSe .... [TRUNCATED] 
+
+> gene_info
+  gene_id chromosome count
+1 YDR070C         IV     0
+2 YAL001C          I   152
+3 YBR118W         II 48210
+4 YGR192C        VII 30115
+
+> # Inspect
+> str(gene_info)
+'data.frame':	4 obs. of  3 variables:
+ $ gene_id   : chr  "YDR070C" "YAL001C" "YBR118W" "YGR192C"
+ $ chromosome: chr  "IV" "I" "II" "VII"
+ $ count     : num  0 152 48210 30115
+
+> dim(gene_info)
+[1] 4 3
+
+> nrow(gene_info)
+[1] 4
+
+> ncol(gene_info)
+[1] 3
+
+> colnames(gene_info)
+[1] "gene_id"    "chromosome" "count"     
+
+> ### Subsetting a data frame
+> 
+> # Data frames are indexed using [rows, columns]
+> # Leaving a position empty means "all of them"
+> gene_info[1, ]
+  gene_id chromosome count
+1 YDR070C         IV     0
+
+> gene_info[, 1]
+[1] "YDR070C" "YAL001C" "YBR118W" "YGR192C"
+
+> gene_info[2, 3]
+[1] 152
+
+> gene_info[1:2, c("gene_id", "count")]
+  gene_id count
+1 YDR070C     0
+2 YAL001C   152
+
+> # The comma is what distinguishes a data frame from a vector
+> # Last week a[2] selected the second element of a vector
+> # Here gene_info[2, ] sele .... [TRUNCATED] 
+[1] FALSE  TRUE  TRUE  TRUE
+
+> gene_info[gene_info$count > 100, ]
+  gene_id chromosome count
+2 YAL001C          I   152
+3 YBR118W         II 48210
+4 YGR192C        VII 30115
+
+> ### Adding a column
+> 
+> # New columns are created by assigning to a name that does not yet exist
+> gene_info$log10_count <- log10(gene_info$count + .... [TRUNCATED] 
+
+> gene_info
+  gene_id chromosome count log10_count
+1 YDR070C         IV     0    0.000000
+2 YAL001C          I   152    2.184691
+3 YBR118W         II 48210    4.683146
+4 YGR192C        VII 30115    4.478797
+
+> ### Matrices
+> 
+> # We supply the numbers and tell R how many rows it has
+> m <- matrix(c(0, 152, 48210, 30115, 5, 200), nrow = 3)
+
+> m
+      [,1]  [,2]
+[1,]     0 30115
+[2,]   152     5
+[3,] 48210   200
+
+> dim(m)
+[1] 3 2
+
+> class(m)
+[1] "matrix" "array" 
+
+> # We can then name them
+> rownames(m) <- c("gene1", "gene2", "gene3")
+
+> colnames(m) <- c("sampleA", "sampleB")
+
+> m
+      sampleA sampleB
+gene1       0   30115
+gene2     152       5
+gene3   48210     200
+
+> # Because every cell is a number we can do arithmetic on whole matrix
+> m * 2
+      sampleA sampleB
+gene1       0   60230
+gene2     304      10
+gene3   96420     400
+
+> rowSums(m)
+gene1 gene2 gene3 
+30115   157 48410 
+
+> colSums(m)
+sampleA sampleB 
+  48362   30320 
+
+> # rowSums() gave three values, one per gene
+> # colSums() gave two values, one per sample
+> # Remember which is which!!
+> # This is the reason DESeq .... [TRUNCATED] 
+
+> sample_metadata
+    sample_id condition age_days replicate
+1 SRR10551660      thin       45         3
+2 SRR10551661      thin       45         2
+3 SRR10551662      thin       45         1
+4 SRR10551663     early       10         3
+5 SRR10551664     early       10         2
+6 SRR10551665     early       10         1
+
+> # The early samples have the higher accession numbers 
+> # The replicate numbers count down, not up. Both are correct
+> # This is what the submitter .... [TRUNCATED] 
+[1] "character"
+
+> str(sample_metadata)
+'data.frame':	6 obs. of  4 variables:
+ $ sample_id: chr  "SRR10551660" "SRR10551661" "SRR10551662" "SRR10551663" ...
+ $ condition: chr  "thin" "thin" "thin" "early" ...
+ $ age_days : num  45 45 45 10 10 10
+ $ replicate: num  3 2 1 3 2 1
+
+> # We want early to be the reference
+> # ...so that in Week 9 a positive fold change will mean "higher in the thin biofilm than in the early biofilm" .... [TRUNCATED] 
+
+> levels(sample_metadata$condition)
+[1] "early" "thin" 
+
+> str(sample_metadata)
+'data.frame':	6 obs. of  4 variables:
+ $ sample_id: chr  "SRR10551660" "SRR10551661" "SRR10551662" "SRR10551663" ...
+ $ condition: Factor w/ 2 levels "early","thin": 2 2 2 1 1 1
+ $ age_days : num  45 45 45 10 10 10
+ $ replicate: num  3 2 1 3 2 1
+
+> ### Row names
+> 
+> # Name rows of the metadata after the samples
+> rownames(sample_metadata) <- sample_metadata$sample_id
+
+> sample_metadata
+              sample_id condition age_days replicate
+SRR10551660 SRR10551660      thin       45         3
+SRR10551661 SRR10551661      thin       45         2
+SRR10551662 SRR10551662      thin       45         1
+SRR10551663 SRR10551663     early       10         3
+SRR10551664 SRR10551664     early       10         2
+SRR10551665 SRR10551665     early       10         1
+
+> ### Finding the count files
+> 
+> # Locate the six count files produced by HTSeq-count in Week 4
+> # Note on syntax, we use double backslash to escap .... [TRUNCATED] 
+
+> count_files <- list.files(counts_dir, pattern = "\\.txt$")
+
+> count_files
+[1] "SRR10551660.txt" "SRR10551661.txt" "SRR10551662.txt"
+[4] "SRR10551663.txt" "SRR10551664.txt" "SRR10551665.txt"
+
+> length(count_files)
+[1] 6
+
+> # Note this should print 6. Stop here if it does not. 
+> 
+> # We need the full path to each file
+> count_paths <- file.path(counts_dir, count_files)
+
+> count_paths
+[1] "/home/shared/counts/SRR10551660.txt"
+[2] "/home/shared/counts/SRR10551661.txt"
+[3] "/home/shared/counts/SRR10551662.txt"
+[4] "/home/shared/counts/SRR10551663.txt"
+[5] "/home/shared/counts/SRR10551664.txt"
+[6] "/home/shared/counts/SRR10551665.txt"
+
+> ### Deriving sample names from file names
+> 
+> # Strip until we have sample identifiers
+> count_files
+[1] "SRR10551660.txt" "SRR10551661.txt" "SRR10551662.txt"
+[4] "SRR10551663.txt" "SRR10551664.txt" "SRR10551665.txt"
+
+> sample_ids <- gsub("\\.txt$", "", count_files)
+
+> sample_ids
+[1] "SRR10551660" "SRR10551661" "SRR10551662" "SRR10551663" "SRR10551664"
+[6] "SRR10551665"
+
+> sample_ids <- gsub("_sorted", "", sample_ids)
+
+> sample_ids
+[1] "SRR10551660" "SRR10551661" "SRR10551662" "SRR10551663" "SRR10551664"
+[6] "SRR10551665"
+
+> # Check that every sample id derived from file name also appears in metadata table
+> sample_ids %in% sample_metadata$sample_id
+[1] TRUE TRUE TRUE TRUE TRUE TRUE
+
+> all(sample_ids %in% sample_metadata$sample_id)
+[1] TRUE
+
+> # The %in% operator asks, for each element on the left, whether it appears anywhere on the right. The all() function collapses the result to a singl .... [TRUNCATED] 
+
+> right <- data.frame(
++   gene_id = c("YAL001C", "YBR118W", "YGR192C"),
++   sampleB = c(170, 51002, 28900)
++ )
+
+> left
+  gene_id sampleA
+1 YAL001C     152
+2 YBR118W   48210
+3 YGR192C   30115
+
+> right
+  gene_id sampleB
+1 YAL001C     170
+2 YBR118W   51002
+3 YGR192C   28900
+
+> # Join them
+> merge(left, right, by = "gene_id")
+  gene_id sampleA sampleB
+1 YAL001C     152     170
+2 YBR118W   48210   51002
+3 YGR192C   30115   28900
+
+> ### Reading all six files with a loop
+> 
+> # Start with one file first as per prac
+> counts_table <- read.table(
++   count_paths[1],
++   header = FA .... [TRUNCATED] 
+
+> # Then start the loop from two so merge does not disambiguate samples
+> for (i in 2:length(count_paths)) {
++   
++   one_sample <- read.table(
++      .... [TRUNCATED] 
+
+> dim(counts_table)
+[1] 7132    7
+
+> colnames(counts_table)
+[1] "gene_id"     "SRR10551660" "SRR10551661" "SRR10551662" "SRR10551663"
+[6] "SRR10551664" "SRR10551665"
+
+> ### IMPORTANT: See practical info for how tables can be damaged and why we are using the code above
+> # The key here is the width of the data table
+ .... [TRUNCATED] 
+
+> sum(is_summary)
+[1] 5
+
+> # Split table in two
+> htseq_summary <- counts_table[is_summary, ]
+
+> gene_table <- counts_table[!is_summary, ]
+
+> dim(counts_table)
+[1] 7132    7
+
+> dim(htseq_summary)
+[1] 5 7
+
+> dim(gene_table)
+[1] 7127    7
+
+> htseq_summary
+                 gene_id SRR10551660 SRR10551661 SRR10551662 SRR10551663
+1 __alignment_not_unique           0           0           0           0
+2            __ambiguous       20813       12620        7652       10567
+3           __no_feature     1278454     1140690      502363      786762
+4          __not_aligned           0           0           0           0
+5        __too_low_aQual           0           0           0           0
+  SRR10551664 SRR10551665
+1           0           0
+2       12207       11833
+3      894131      881876
+4           0           0
+5           0           0
+
+> ### These rows tell you how many reads were discarded because they fell outside any gene
+> # ...because they were ambiguous between overlapping gene .... [TRUNCATED] 
+
+> rownames(count_matrix) <- gene_table$gene_id
+
+> dim(count_matrix)
+[1] 7127    6
+
+> class(count_matrix)
+[1] "matrix" "array" 
+
+> str(count_matrix)
+ int [1:7127, 1:6] 0 0 0 0 7 40 42 0 0 0 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : chr [1:7127] "ETS1-1" "ETS1-2" "ETS2-1" "ETS2-2" ...
+  ..$ : chr [1:6] "SRR10551660" "SRR10551661" "SRR10551662" "SRR10551663" ...
+
+> head(count_matrix)
+       SRR10551660 SRR10551661 SRR10551662 SRR10551663 SRR10551664
+ETS1-1           0           0           0           0           0
+ETS1-2           0           0           0           0           0
+ETS2-1           0           0           0           0           0
+ETS2-2           0           0           0           0           0
+HRA1             7           3           4           6           9
+ICR1            40          40          22          39          31
+       SRR10551665
+ETS1-1           0
+ETS1-2           0
+ETS2-1           0
+ETS2-2           0
+HRA1             4
+ICR1            32
+
+> # Check genes and samples in count matrix
+> # dim returns rows first, then columns
+> # Could also use nrow ncol
+> dim(count_matrix)
+[1] 7127    6
+
+> ####################################
+> # The check that saves your analysis
+> ####################################
+> 
+> # The columns of the count m .... [TRUNCATED] 
+[1] "SRR10551660" "SRR10551661" "SRR10551662" "SRR10551663" "SRR10551664"
+[6] "SRR10551665"
+
+> sample_metadata$sample_id
+[1] "SRR10551660" "SRR10551661" "SRR10551662" "SRR10551663" "SRR10551664"
+[6] "SRR10551665"
+
+> # Now force the columns into the metadata order and check
+> count_matrix <- count_matrix[, sample_metadata$sample_id]
+
+> all(colnames(count_matrix) == sample_metadata$sample_id)
+[1] TRUE
+
+> # Selecting columns by name is the same square-bracket pattern as always
+> # Names go after the comma, because they refer to columns
+> # They are in .... [TRUNCATED] 
+
+> ### Always reorder the matrix columns to match the metadata rows
+> # ...always assert that they match
+> # ...and never continue past a failed check
+ .... [TRUNCATED] 
+
+> length(library_sizes)
+[1] 6
+
+> library_sizes
+SRR10551660 SRR10551661 SRR10551662 SRR10551663 SRR10551664 SRR10551665 
+    1168450      996774      442820      684110      781617      773439 
+
+> # Reads in millions i.e. 1.17
+> round(library_sizes / 1e6, 2)
+SRR10551660 SRR10551661 SRR10551662 SRR10551663 SRR10551664 SRR10551665 
+       1.17        1.00        0.44        0.68        0.78        0.77 
+
+> ### Summary of reads that were not assigned to any gene
+> 
+> # Summary rows we set aside earlier
+> # Convert to matrix, removing header, then add up .... [TRUNCATED] 
+
+> rownames(summary_matrix) <- htseq_summary$gene_id
+
+> summary_matrix
+                       SRR10551660 SRR10551661 SRR10551662 SRR10551663
+__alignment_not_unique           0           0           0           0
+__ambiguous                  20813       12620        7652       10567
+__no_feature               1278454     1140690      502363      786762
+__not_aligned                    0           0           0           0
+__too_low_aQual                  0           0           0           0
+                       SRR10551664 SRR10551665
+__alignment_not_unique           0           0
+__ambiguous                  12207       11833
+__no_feature                894131      881876
+__not_aligned                    0           0
+__too_low_aQual                  0           0
+
+> unassigned <- colSums(summary_matrix)
+
+> unassigned
+SRR10551660 SRR10551661 SRR10551662 SRR10551663 SRR10551664 SRR10551665 
+    1299267     1153310      510015      797329      906338      893709 
+
+> ### Calculate the proportion of reads assigned to genes
+> 
+> # First build a data frame
+> qc_table <- data.frame(
++   sample_id = names(library_size .... [TRUNCATED] 
+
+> qc_table
+    sample_id library_size unassigned
+1 SRR10551660      1168450    1299267
+2 SRR10551661       996774    1153310
+3 SRR10551662       442820     510015
+4 SRR10551663       684110     797329
+5 SRR10551664       781617     906338
+6 SRR10551665       773439     893709
+
+> # Add two more columns using existing
+> qc_table$total_reads <- qc_table$library_size + qc_table$unassigned
+
+> qc_table$percent_assigned <- 100 * qc_table$library_size / qc_table$total_reads
+
+> qc_table
+    sample_id library_size unassigned total_reads percent_assigned
+1 SRR10551660      1168450    1299267     2467717         47.34943
+2 SRR10551661       996774    1153310     2150084         46.35977
+3 SRR10551662       442820     510015      952835         46.47394
+4 SRR10551663       684110     797329     1481439         46.17875
+5 SRR10551664       781617     906338     1687955         46.30556
+6 SRR10551665       773439     893709     1667148         46.39294
+
+> # A healthy RNA-seq sample from a well-annotated genome such as yeast should assign a large majority of its reads to genes
+> # A sample that is mark .... [TRUNCATED] 
+
+> qc_table
+    sample_id library_size unassigned total_reads percent_assigned
+1 SRR10551660      1168450    1299267     2467717         47.34943
+2 SRR10551661       996774    1153310     2150084         46.35977
+3 SRR10551662       442820     510015      952835         46.47394
+4 SRR10551663       684110     797329     1481439         46.17875
+5 SRR10551664       781617     906338     1687955         46.30556
+6 SRR10551665       773439     893709     1667148         46.39294
+  condition age_days replicate
+1      thin       45         3
+2      thin       45         2
+3      thin       45         1
+4     early       10         3
+5     early       10         2
+6     early       10         1
+
+> # Download library
+> library(ggplot2)
+
+> # Fill aesthetics maps a column to bar colour
+> # theme_bw() function replaces the grey default background
+> # theme() call rotates the x-axis label .... [TRUNCATED] 
+
+> ### Plot percent_assigned for each sample as a bar chart, coloured by condition, with a sensible title and axis labels
+> ggplot(qc_table, aes(x = sa .... [TRUNCATED] 
+
+> ####################################
+> # A first look across samples
+> ####################################
+> 
+> # Draw histogram of counts across s .... [TRUNCATED] 
+
+> ####################################
+> # Filtering genes with no expression
+> ####################################
+> 
+> # Many genes are not express .... [TRUNCATED] 
+
+> length(gene_totals)
+[1] 7127
+
+> sum(gene_totals == 0)
+[1] 587
+
+> sum(gene_totals > 0)
+[1] 6540
+
+> # Remove them
+> # A logical vector goes before the comma in the filter
+> # ...and the columns are all kept
+> count_matrix_filtered <- count_matrix[g .... [TRUNCATED] 
+
+> dim(count_matrix)
+[1] 7127    6
+
+> dim(count_matrix_filtered)
+[1] 6540    6
+
+> # Quick activity to record genes with at least ten reads in total across s
+> sum(gene_totals >= 10)
+[1] 6213
+
+> count_matrix_10 <- count_matrix[gene_totals >= 10, ]
+
+> dim(count_matrix_10)
+[1] 6213    6
+
+> ####################################
+> # Saving your work
+> ####################################
+> 
+> # Create dir
+> dir.create("Week7_results", sho .... [TRUNCATED] 
+
+> # Write the tables as CSV files
+> # Note row.names = TRUE for the count matrix
+> # The row names are the gene identifiers so we must keep them
+> wri .... [TRUNCATED] 
+
+> write.csv(
++   sample_metadata,
++   file = "Week7_results/sample_metadata.csv",
++   row.names = FALSE
++ )
+
+> write.csv(
++   qc_table,
++   file = "Week7_results/qc_table.csv",
++   row.names = FALSE
++ )
+
+> # R also has its own format, which preserves an object exactly
+> # ...including factor levels and row names
+> saveRDS(count_matrix, file = "Week7_re ..." ... [TRUNCATED] 
+
+> saveRDS(sample_metadata, file = "Week7_results/sample_metadata.rds")
+
+> # Reading them back is a single line each
+> # ...and the object returns unchanged
+> test_matrix <- readRDS("Week7_results/count_matrix.rds")
+
+> identical(test_matrix, count_matrix)
+[1] TRUE
+
+> # Use CSV when a human or another program needs to read the file
+> # Use RDS when R needs to read it back exactly as it was
+> 
+> ################### .... [TRUNCATED] 
+R version 4.6.1 (2026-06-24)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 22.04.5 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0 
+LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0  LAPACK version 3.10.0
+
+locale:
+ [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
+ [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+ [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
+[10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+
+time zone: Australia/Melbourne
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] ggplot2_4.0.3
+
+loaded via a namespace (and not attached):
+ [1] labeling_0.4.3     RColorBrewer_1.1-3 R6_2.6.1          
+ [4] tidyselect_1.2.1   farver_2.1.2       magrittr_2.0.5    
+ [7] gtable_0.3.6       glue_1.8.1         tibble_3.3.1      
+[10] pkgconfig_2.0.3    dplyr_1.2.1        generics_0.1.4    
+[13] lifecycle_1.0.5    cli_3.6.6          S7_0.2.2          
+[16] scales_1.4.0       grid_4.6.1         vctrs_0.7.3       
+[19] withr_3.0.3        compiler_4.6.1     rstudioapi_0.19.0 
+[22] tools_4.6.1        pillar_1.11.1      rlang_1.3.0    

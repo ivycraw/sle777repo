@@ -1,0 +1,29 @@
+---
+title: "Week9_group_homework_s224907333"
+author: "Ivy Craw"
+date: "2026-08-26"
+output: html_document
+---
+
+# Useful
+
+### baseMean
+The average normalised count across all six samples. It tells you how strongly the gene is expressed overall. A gene with a baseMean of 5 is barely detected; one with 50,000 is a major transcript.
+
+### log2FoldChange
+The effect size. A value of 1 means the gene is twice as high in the thin biofilm; a value of -2 means it is four times lower. Zero means no change. This is the number a biologist cares about.
+
+### lfcSE
+The standard error of the fold change estimate. Small counts give large standard errors. A large fold change with a large standard error is not evidence of anything.
+
+### stat
+The test statistic: the fold change divided by its standard error. Effect size measured in units of its own uncertainty. This is what the p-value is computed from.
+
+### pvalue
+The probability of seeing a difference this large, or larger, if the gene were truly unchanged. Not adjusted for the thousands of other genes you also tested.
+
+### padj
+That p-value adjusted for multiple testing. This is the column you filter on. Section 10 explains why.
+
+# To complete in group study time
+
