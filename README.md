@@ -60,3 +60,9 @@ methods-section
 fix-heatmap
 ```
 
+Notes from the practical:
+"How to avoid conflicts in the first place. Pull before you start and before you push. Keep commits small and push often — big, rare commits collide hard. Divide the work so two people rarely edit the same file at once (one owns the QC section, another the results). For the R Markdown report, commit the .Rmd source, not the knitted .html, which rewrites wholesale and conflicts constantly. And talk to each other: the best conflict-resolution tool is a message saying "I'm editing the plot section now"."
+
+Using `git log` you can scroll through your commit history and pick the commit (version) you want to go back to.
+
+
