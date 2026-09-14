@@ -17,7 +17,7 @@ Instead, I'll do `git add Week{6..10}_results`.
 
 [Git cheat sheet](https://git-scm.com/cheat-sheet)
 
-```
+```{bash}
 git pull        # get everyone else's latest work first
 # ... do your work, then stage and commit ...
 git pull        # again, in case someone pushed while you worked
@@ -26,10 +26,27 @@ git push        # now send yours up
 
 Branches and pull requests
 
-```
+```{bash}
 git switch -c results-writeup        # create and move to a new branch
 # ... edit, stage and commit as usual ...
 git push -u origin results-writeup   # publish your branch to GitHub
+```
+
+After a pull request has been merged on GitHub, you need to delete the branch both on GitHub and locally. 
+
+```{bash}
+# Server: switch back to updated main
+git switch main
+git pull origin main
+
+# Clean up your knowledge of deleted remote branches
+git fetch --prune
+
+# Delete the local branch
+git branch -d results-writeup
+
+# Create a fresh branch from up to date main and start new work
+git switch -c new-feature-name
 ```
 
 Common practice often looks like:
